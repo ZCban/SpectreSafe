@@ -18,7 +18,7 @@ Disk Unique ID Spoofing: Changes the unique ID of non-system disks.
 Volume Serial Number Spoofing: Modifies the volume serial numbers of available drives.
 MAC Address Spoofing: Changes the MAC address of network adapters.
 Display EDID Spoofing: Modifies EDID data for displays.
-DMI Information Spoofing: Changes DMI information using the AMIDEWINx64 tool.
+DMI Information Spoofing: Changes DMI information using the AMIDEWINx64 tool (requires AMIDEWINx64.EXE to be present on the C: drive).
 Service Management: Sets specified services to manual start and removes non-connected devices.
 System Cleaning: Cleans system files and browser data, including:
                                   Clean Temporary System Files: Uses the cleanmgr utility to remove temporary files and deletes temporary files from the system's temp folder.
