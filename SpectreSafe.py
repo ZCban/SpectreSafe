@@ -33,6 +33,27 @@ class Spoofer:
         print(log_message)  # Print to console
         logging.info(log_message)  # Log to file
 
+    class PowerShellExecutionPolicyManager:
+        @staticmethod
+        def allow_script_pw():
+            try:
+                # Ottiene la politica di esecuzione corrente per la macchina locale
+                current_policy_command = ["powershell.exe", "-Command", "Get-ExecutionPolicy -Scope LocalMachine"]
+                current_policy = subprocess.check_output(current_policy_command).decode().strip()
+
+                # Controlla se la politica corrente non è 'Unrestricted'
+                if current_policy != 'Unrestricted':
+                    # Imposta la politica di esecuzione su 'Unrestricted'
+                    set_policy_command = ["powershell.exe", "-Command", "Set-ExecutionPolicy Unrestricted -Scope LocalMachine -Force"]
+                    subprocess.run(set_policy_command, check=True)
+                    print("PS ExecutionPolicy cambiata in Unrestricted.")
+                else:
+                    print("PS ExecutionPolicy è già Unrestricted.")
+            except subprocess.CalledProcessError as e:
+                print(f"Errore durante il cambiamento della ExecutionPolicy: {e}")
+            except Exception as e:
+                print(f"Errore imprevisto: {e}")
+
     class MachineId:
         @staticmethod
         def spoof():
@@ -1242,6 +1263,56 @@ class Spoofer:
             # Clear USB Device History
             Spoofer.ServiceManager.run_command_as_admin('reg delete "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Enum\\USBSTOR" /f', "Clear USB device history")
 
+            # Disable automatic paging file management for all drives
+            Spoofer.ServiceManager.run_command_as_admin('wmic computersystem set AutomaticManagedPagefile=False', "Disable automatic paging for all drives")
+
+            #Disable ReadyBoost and Memory Compression
+            commands = ['reg add "HKLM\\SYSTEM\\ControlSet001\\Control\\Class\\{71a27cdd-812a-11d0-bec7-08002be2092f}" /v "LowerFilters" /t REG_MULTI_SZ /d "fvevol\\0iorate" /f',
+                        'reg add "HKLM\\SYSTEM\\ControlSet001\\Services\\rdyboost" /v "Start" /t REG_DWORD /d "4" /f',
+                        'reg add "HKLM\\SYSTEM\\ControlSet001\\Services\\SysMain" /v "Start" /t REG_DWORD /d "4" /f',
+                        'reg add "HKLM\\SYSTEM\\ControlSet001\\Control\\Session Manager\\Memory Management\\PrefetchParameters" /v "EnablePrefetcher" /t REG_DWORD /d "0" /f',
+                        'reg add "HKLM\\SYSTEM\\ControlSet001\\Control\\Session Manager\\Memory Management\\PrefetchParameters" /v "EnableSuperfetch" /t REG_DWORD /d "0" /f',
+                        'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\EMDMgmt" /v "GroupPolicyDisallowCaches" /t REG_DWORD /d "1" /f',
+                        'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\EMDMgmt" /v "AllowNewCachesByDefault" /t REG_DWORD /d "0" /f',
+                        'PowerShell -NonInteractive -NoLogo -NoProfile -Command "Disable-MMAgent -mc"',
+                        'reg add "HKLM\\SYSTEM\\ControlSet001\\Control\\Session Manager\\Memory Management\\PrefetchParameters" /v "isMemoryCompressionEnabled" /t REG_DWORD /d "0" /f']
+            for command in commands:
+                Spoofer.ServiceManager.run_command_as_admin(command, "Disable ReadyBoost and Memory Compression")
+
+
+            # Disabilita Notifiche
+            commands = ['reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Notifications\\Settings" /v "NOC_GLOBAL_SETTING_ALLOW_TOASTS_ABOVE_LOCK" /t REG_DWORD /d "0" /f',
+                        'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Notifications\\Settings" /v "NOC_GLOBAL_SETTING_ALLOW_CRITICAL_TOASTS_ABOVE_LOCK" /t REG_DWORD /d "0" /f',
+                        'reg add "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Notifications\\Settings" /v "NOC_GLOBAL_SETTING_TOASTS_ENABLED" /t REG_DWORD /d "0" /f',
+                        'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Explorer" /v "DisableNotificationCenter" /t REG_DWORD /d "1" /f',
+                        'reg add "HKCU\\SOFTWARE\\Policies\\Microsoft\\Windows\\Explorer" /v "DisableNotificationCenter" /t REG_DWORD /d "1" /f',
+                        'reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\PushNotifications" /v "ToastEnabled" /t REG_DWORD /d "0" /f',
+                        'reg add "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\PushNotifications" /v "ToastEnabled" /t REG_DWORD /d "0" /f',
+                        'reg add "HKCU\\Software\\Policies\\Microsoft\\Windows\\CurrentVersion\\PushNotifications" /v "NoToastApplicationNotification" /t REG_DWORD /d "1" /f',
+                        'reg add "HKCU\\Software\\Policies\\Microsoft\\Windows\\CurrentVersion\\PushNotifications" /v "NoTileApplicationNotification" /t REG_DWORD /d "1" /f',
+                        'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Explorer" /v "IsNotificationsEnabled" /t REG_DWORD /d "0" /f',
+                        'taskkill /im explorer.exe /f',
+                        'start explorer.exe']
+            for command in commands:
+                Spoofer.ServiceManager.run_command_as_admin(command, "Disabilita Notifiche")
+
+            # Disabilita UAC
+            commands = ['reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v "EnableVirtualization" /t REG_DWORD /d "1" /f',
+                        'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v "EnableInstallerDetection" /t REG_DWORD /d "1" /f',
+                        'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v "PromptOnSecureDesktop" /t REG_DWORD /d "1" /f',
+                        'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v "EnableLUA" /t REG_DWORD /d "1" /f',
+                        'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v "EnableSecureUIAPaths" /t REG_DWORD /d "1" /f',
+                        'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v "ConsentPromptBehaviorAdmin" /t REG_DWORD /d "5" /f',
+                        'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v "ValidateAdminCodeSignatures" /t REG_DWORD /d "0" /f',
+                        'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v "EnableUIADesktopToggle" /t REG_DWORD /d "0" /f',
+                        'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v "ConsentPromptBehaviorUser" /t REG_DWORD /d "3" /f',
+                        'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v "FilterAdministratorToken" /t REG_DWORD /d "0" /f']
+
+            for command in commands:
+                Spoofer.ServiceManager.run_command_as_admin(command, "Disabilita UAC")
+
+               
+
         @staticmethod
         def delete_item(path):
             """
@@ -1435,6 +1506,7 @@ class Spoofer:
 
                     
 if __name__ == "__main__":
+    Spoofer.PowerShellExecutionPolicyManager.allow_script_pw()
     Spoofer.MachineId.spoof()
     Spoofer.HardwareGUID.spoof()
     Spoofer.MachineGUID.spoof()
