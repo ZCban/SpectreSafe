@@ -75,4 +75,4 @@ Open a command prompt as an administrator and execute,The script will attempt to
 
 
 ## Disclaimer
-This script is intended for educational purposes only. Misuse of this script may result in system instability or violate terms of service agreements. Use at your own risk.
+This script is intended for educational purposes only. Misuse of this script may result in system instability . Use at your own risk.
