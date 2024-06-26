@@ -52,6 +52,10 @@ Additionally, the script provides powerful system maintenance features, includin
 - **Reset Firewall Rules**: Resets Windows Firewall rules to default settings.
 - **Clear USB Device History**: Deletes the registry entries for USB devices.
 - **Clear Browser Data**: Deletes cache, cookies, history, session data, and download metadata for installed browsers (Google Chrome, Mozilla Firefox, Microsoft Edge, Opera, Brave).
+- **Disable automatic paging**
+- **Disable ReadyBoost and Memory Compression**
+- **Disable Notification
+- **Disable UAC**
 
 ## Installation
 
