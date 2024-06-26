@@ -6,6 +6,10 @@ Additionally, the script provides powerful system maintenance features, includin
 
 ## Features
 
+**PowerShell Script Unlocking**: Enables the execution of PowerShell scripts by changing the execution policy.
+
+**Auto-Restart**: Restarts the system automatically after script execution is complete.
+
 **Machine ID Spoofing**: Changes the machine ID in the registry.
 
 **Hardware GUID Spoofing**: Modifies the hardware profile GUID.
@@ -34,9 +38,20 @@ Additionally, the script provides powerful system maintenance features, includin
 
 **Display EDID Spoofing**: Modifies EDID data for displays.
 
-**DMI Information Spoofing**: Changes DMI information using the AMIDEWINx64 tool (requires AMIDEWINx64.EXE to be present on the C: drive).
+**DMI Information Spoofing**: Changes DMI information using the AMIDEWINx64 tool (requires AMIDEWINx64.EXE to be present on the C: drive). This includes:
+- **System Serial Number Spoofing**: Changes the system serial number.
+- **Baseboard Serial Number Spoofing**: Modifies the baseboard serial number.
+- **Baseboard Asset Tag Spoofing**: Changes the baseboard asset tag.
+- **Chassis Serial Number Spoofing**: Modifies the chassis serial number.
+- **Chassis Asset Tag Spoofing**: Changes the chassis asset tag.
+- **Processor Serial Number Spoofing**: Alters the processor serial number.
+- **Processor Asset Tag Spoofing**: Changes the processor asset tag.
+- **Before and After Report Generation**: Generates reports before and after spoofing to verify changes.
 
-**Service Management**: Sets specified services to manual start and removes non-connected devices.
+**Service Management**: Sets specified services to manual start and removes non-connected devices. This is managed by the ServiceManager class, which includes:
+
+- **Setting Services to Manual Start**: The script sets the startup type of various services to manual. These services include AdobeARMservice, DropboxUpdate, Steam Client Service, and many others. The set_services_to_manual method iterates through a predefined list of services, changing their startup type to manual.
+- **Removing Non-Connected Devices**: The script uses PowerShell to list all PnP devices and removes those that are not currently connected. The remove_non_connected_devices method retrieves the list of devices and removes the non-connected ones using the pnputil command.
 
 **System Cleaning**: Cleans system files and browser data, including:
 
