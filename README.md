@@ -1,7 +1,3 @@
-# Spoofer Script README
-
-## Overview
-
 This script provides comprehensive functionality to spoof various hardware and software identifiers on a Windows machine, enhancing user privacy and security. It modifies system registry entries, executes system commands, and manipulates data to alter machine IDs, GUIDs, EFI variables, system information, NVIDIA settings, disk volume IDs, unique disk IDs, MAC addresses, EDID for displays, and DMI information. However, it does not change the serial numbers of SSDs, GPU UUIDs, or RAM serial numbers.
 
 Additionally, the script provides powerful system maintenance features, including extensive system cleaning, service management, and removal of non-connected devices. These capabilities collectively improve system performance and safeguard user privacy.
