@@ -163,5 +163,5 @@ class ServiceManager:
 
 
 
-remove_non_connected_devices()
-clean_system_files()
+ServiceManager.remove_non_connected_devices()
+ServiceManager.clean_system_files()
