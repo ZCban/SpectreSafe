@@ -54,6 +54,108 @@ class Spoofer:
             except Exception as e:
                 print(f"Errore imprevisto: {e}")
 
+    class BuildGUID:
+        @staticmethod
+        def generate_build_guid():
+            part1 = random.randint(100000000, 999999999)
+            part2 = random.randint(1000000000, 4294967295)  # Max value for a 32-bit unsigned int
+            part3 = random.randint(100000000, 999999999)
+            return f"{part1}-{part2}-{part3}"
+
+        @staticmethod
+        def spoof():
+            try:
+                with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", 0, winreg.KEY_ALL_ACCESS) as key:
+                    old_value, _ = winreg.QueryValueEx(key, "BuildGUID")
+                    new_value = Spoofer.BuildGUID.generate_build_guid()
+                    winreg.SetValueEx(key, "BuildGUID", 0, winreg.REG_SZ, new_value)
+                    Spoofer.log_change("BuildGUID", old_value, new_value)
+                    return True
+            except Exception as e:
+                logging.error(f"Error modifying BuildGUID: {e}")
+                return False
+
+    class RegisteredOrganization:
+        @staticmethod
+        def generate_organization_id():
+            part1 = ''.join(random.choices('0123456789', k=9))
+            part2 = ''.join(random.choices('0123456789', k=9))
+            part3 = ''.join(random.choices('0123456789', k=9))
+            return f"{part1}-{part2}-{part3}"
+
+        @staticmethod
+        def spoof():
+            try:
+                with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", 0, winreg.KEY_ALL_ACCESS) as key:
+                    old_value, _ = winreg.QueryValueEx(key, "RegisteredOrganization")
+                    new_value = Spoofer.RegisteredOrganization.generate_organization_id()
+                    winreg.SetValueEx(key, "RegisteredOrganization", 0, winreg.REG_SZ, new_value)
+                    Spoofer.log_change("RegisteredOrganization", old_value, new_value)
+                    return True
+            except Exception as e:
+                logging.error(f"Error modifying RegisteredOrganization: {e}")
+                return False
+
+    class RegisteredOwner:
+        @staticmethod
+        def generate_owner_id():
+            part1 = ''.join(random.choices('0123456789', k=9))
+            part2 = ''.join(random.choices('0123456789', k=9))
+            part3 = ''.join(random.choices('0123456789', k=9))
+            return f"{part1}-{part2}-{part3}"
+
+        @staticmethod
+        def spoof():
+            try:
+                with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", 0, winreg.KEY_ALL_ACCESS) as key:
+                    old_value, _ = winreg.QueryValueEx(key, "RegisteredOwner")
+                    new_value = Spoofer.RegisteredOwner.generate_owner_id()
+                    winreg.SetValueEx(key, "RegisteredOwner", 0, winreg.REG_SZ, new_value)
+                    Spoofer.log_change("RegisteredOwner", old_value, new_value)
+                    return True
+            except Exception as e:
+                logging.error(f"Error modifying RegisteredOwner: {e}")
+                return False
+
+    class DigitalProductId:
+        @staticmethod
+        def spoof():
+            try:
+                with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", 0, winreg.KEY_ALL_ACCESS) as key:
+                    old_value, _ = winreg.QueryValueEx(key, "DigitalProductId")
+                    if len(old_value) >= 5:
+                        new_value = bytearray(old_value)
+                        old_bytes = old_value[-5:]
+                        for i in range(5):
+                            new_value[-1 - i] = random.randint(0, 255)
+                        winreg.SetValueEx(key, "DigitalProductId", 0, winreg.REG_BINARY, new_value)
+                        new_bytes = new_value[-5:]
+                        Spoofer.log_change("DigitalProductId", old_bytes, new_bytes)
+                    return True
+            except Exception as e:
+                logging.error(f"Error modifying DigitalProductId: {e}")
+                return False
+
+    class DigitalProductId4:
+        @staticmethod
+        def spoof():
+            try:
+                with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", 0, winreg.KEY_ALL_ACCESS) as key:
+                    old_value, _ = winreg.QueryValueEx(key, "DigitalProductId4")
+                    if len(old_value) >= 5:
+                        new_value = bytearray(old_value)
+                        old_bytes = old_value[-5:]
+                        for i in range(5):
+                            new_value[-1 - i] = random.randint(0, 255)
+                        winreg.SetValueEx(key, "DigitalProductId4", 0, winreg.REG_BINARY, new_value)
+                        new_bytes = new_value[-5:]
+                        Spoofer.log_change("DigitalProductId4", old_bytes, new_bytes)
+                    return True
+            except Exception as e:
+                logging.error(f"Error modifying DigitalProductId4: {e}")
+                return False
+
+
     class MachineId:
         @staticmethod
         def spoof():
@@ -288,6 +390,19 @@ class Spoofer:
                     return True
             except Exception as e:
                 logging.error(f"Error modifying ProductId: {e}")
+                return False
+    class OSInstallDate:
+        @staticmethod
+        def spoof():
+            try:
+                with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", 0, winreg.KEY_ALL_ACCESS) as key:
+                    old_value, _ = winreg.QueryValueEx(key, "InstallDate")
+                    new_value = int(time.time()) - random.randint(0, 10**8)
+                    winreg.SetValueEx(key, "InstallDate", 0, winreg.REG_DWORD, new_value)
+                    Spoofer.log_change("InstallDate", old_value, new_value)
+                    return True
+            except Exception as e:
+                logging.error(f"Error modifying InstallDate: {e}")
                 return False
 
     class InstallationID:
@@ -1058,11 +1173,17 @@ def run_python_files_in_cleaner():
                     
 if __name__ == "__main__":
     Spoofer.PowerShellExecutionPolicyManager.allow_script_pw()
+    Spoofer.BuildGUID.spoof()
+    Spoofer.RegisteredOrganization.spoof()
+    Spoofer.RegisteredOwner.spoof()
+    Spoofer.DigitalProductId.spoof()
+    Spoofer.DigitalProductId4.spoof()
     Spoofer.MachineId.spoof()
     Spoofer.HardwareGUID.spoof()
     Spoofer.MachineGUID.spoof()
     Spoofer.EFIVariables.spoof()
     Spoofer.SystemInfo.spoof()
+    Spoofer.OSInstallDate.spoof()
     Spoofer.SystemInfoExtended.spoof()
     Spoofer.ProductId.spoof()
     Spoofer.InstallationID.spoof()
@@ -1077,5 +1198,6 @@ if __name__ == "__main__":
     run_python_files_in_cleaner()
     Spoofer.ComputerUserRenamer.spoof()# use for last
     Spoofer.AutoRestart.spoof()
+
 
 
