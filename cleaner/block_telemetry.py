@@ -1,4 +1,3 @@
-@staticmethod
 def block_telemetry_domains():
     try:
         with open(r'C:\Windows\System32\drivers\etc\hosts', 'a') as hosts_file:
