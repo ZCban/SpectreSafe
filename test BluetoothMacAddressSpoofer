@@ -1,0 +1,53 @@
+import os
+import subprocess
+import random
+import string
+import time
+import logging
+
+logging.basicConfig(filename='spoofer_log.txt', level=logging.INFO, format='%(asctime)s [SPOOFER] %(message)s')
+
+class BluetoothMacAddressSpoofer:
+    @staticmethod
+    def generate_random_mac():
+        return "02:00:00:%02x:%02x:%02x" % (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+
+    @staticmethod
+    def execute_command(command):
+        try:
+            result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            return result.stdout.decode().strip()
+        except subprocess.CalledProcessError as e:
+            return e.stderr.decode().strip()
+
+    @staticmethod
+    def spoof():
+        try:
+            # Ottieni tutti i dispositivi Bluetooth
+            get_bluetooth_devices_command = "Get-PnpDevice -Class Bluetooth | Select-Object -ExpandProperty DeviceID"
+            bluetooth_devices = BluetoothMacAddressSpoofer.execute_command(f"powershell -Command \"{get_bluetooth_devices_command}\"").split('\n')
+
+            for device in bluetooth_devices:
+                if device:
+                    # Ottieni il nome del dispositivo Bluetooth
+                    get_device_name_command = f"Get-PnpDeviceProperty -InstanceId '{device.strip()}' -KeyName 'DEVPKEY_Device_FriendlyName' | Select-Object -ExpandProperty Data"
+                    device_name = BluetoothMacAddressSpoofer.execute_command(f"powershell -Command \"{get_device_name_command}\"")
+
+                    # Genera un nuovo indirizzo MAC
+                    new_mac = BluetoothMacAddressSpoofer.generate_random_mac()
+
+                    # Comando per cambiare l'indirizzo MAC
+                    set_mac_command = f"Set-PnpDeviceProperty -InstanceId '{device.strip()}' -KeyName 'DEVPKEY_Device_BluetoothMacAddress' -Value '{new_mac}'"
+                    set_mac_result = BluetoothMacAddressSpoofer.execute_command(f"powershell -Command \"{set_mac_command}\"")
+
+                    # Log changes
+                    logging.info(f"Bluetooth Device: {device_name}, New MAC: {new_mac}")
+                    print(f"Bluetooth Device: {device_name}, New MAC: {new_mac}")
+
+            return True
+        except Exception as e:
+            logging.error(f"Error changing Bluetooth MAC addresses: {e}")
+            return False
+
+if __name__ == "__main__":
+    BluetoothMacAddressSpoofer.spoof()
