@@ -1176,8 +1176,8 @@ if __name__ == "__main__":
     Spoofer.BuildGUID.spoof()
     Spoofer.RegisteredOrganization.spoof()
     Spoofer.RegisteredOwner.spoof()
-    Spoofer.DigitalProductId.spoof()
-    Spoofer.DigitalProductId4.spoof()
+    #Spoofer.DigitalProductId.spoof()# IT CHANGES WHEN YOU CHANGE YOUR WINDOWS ACTIVATION KEY
+    #Spoofer.DigitalProductId4.spoof()# IT CHANGES WHEN YOU CHANGE YOUR WINDOWS ACTIVATION KEY
     Spoofer.MachineId.spoof()
     Spoofer.HardwareGUID.spoof()
     Spoofer.MachineGUID.spoof()
@@ -1187,8 +1187,8 @@ if __name__ == "__main__":
     Spoofer.SystemInfoExtended.spoof()
     Spoofer.ProductId.spoof()
     Spoofer.InstallationID.spoof()
-    Spoofer.NvidiaSettings.modify_registry_ClientUUID()
-    Spoofer.NvidiaSettings.modify_registry_ChipsetMatchID()
+    #Spoofer.NvidiaSettings.modify_registry_ClientUUID()# IT CHANGES WHEN YOU REINSTALL NVIDIA CLIENT
+    #Spoofer.NvidiaSettings.modify_registry_ChipsetMatchID() DO NOT USE ERROR TEST IN THE GRAPHICS DRIVER
     Spoofer.RenameDiskSpoofer.spoof()
     Spoofer.DiskSpoofer.list_disks_and_spoof_unique_ids()
     Spoofer.VolumeSerialNumberSpoofer.spoof_volume_serial_numbers()
