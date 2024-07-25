@@ -1188,7 +1188,7 @@ if __name__ == "__main__":
     Spoofer.ProductId.spoof()
     Spoofer.InstallationID.spoof()
     #Spoofer.NvidiaSettings.modify_registry_ClientUUID()# IT CHANGES WHEN YOU REINSTALL NVIDIA CLIENT
-    #Spoofer.NvidiaSettings.modify_registry_ChipsetMatchID() DO NOT USE ERROR TEST IN THE GRAPHICS DRIVER
+    #Spoofer.NvidiaSettings.modify_registry_ChipsetMatchID()# DO NOT USE ERROR TEST IN THE GRAPHICS DRIVER
     Spoofer.RenameDiskSpoofer.spoof()
     Spoofer.DiskSpoofer.list_disks_and_spoof_unique_ids()
     Spoofer.VolumeSerialNumberSpoofer.spoof_volume_serial_numbers()
