@@ -1,13 +1,15 @@
 import os
+import shutil
 
 def clear_amd_cache():
-    # Ottieni il nome dell'utente corrente
-    user_name = os.getlogin()
+    # Ottieni il percorso della directory principale dell'utente corrente
+    user_home = os.path.expanduser('~')
+    base_cache_path = os.path.join(user_home, "AppData", "Local", "AMD")
 
     # Percorsi della cache
-    dx_cache_path = f"C:\\Users\\{user_name}\\AppData\\Local\\AMD\\DxCache"
-    ogl_cache_path = f"C:\\Users\\{user_name}\\AppData\\Local\\AMD\\OglCache"
-    vk_cache_path = f"C:\\Users\\{user_name}\\AppData\\Local\\AMD\\VkCache"
+    dx_cache_path = os.path.join(base_cache_path, "DxCache")
+    ogl_cache_path = os.path.join(base_cache_path, "OglCache")
+    vk_cache_path = os.path.join(base_cache_path, "VkCache")
 
     # Funzione per cancellare i file all'interno di una cartella
     def clear_cache(cache_path):
@@ -19,7 +21,7 @@ def clear_amd_cache():
                         os.remove(file_path)
                         print(f"File rimosso: {file_path}")
                     except Exception as e:
-                        print(f"Errore nella rimozione del file {file_path}: {e}")
+                        print(f"Errore nella rimozione forse serve a sistema {file_path}")
         else:
             print(f"La cartella {cache_path} non esiste")
 
@@ -28,6 +30,6 @@ def clear_amd_cache():
     clear_cache(ogl_cache_path)
     clear_cache(vk_cache_path)
 
-
-
-clear_amd_cache()
+if __name__ == "__main__":
+    clear_amd_cache()
+    print("Pulizia della cache AMD completata.")
