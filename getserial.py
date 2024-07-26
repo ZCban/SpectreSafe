@@ -5,8 +5,6 @@ from datetime import datetime
 import requests
 import socket
 import winreg
-import random
-import logging
 import re
 
 # Function to get the public IP address
@@ -95,11 +93,22 @@ def get_registry_value(key, subkey, value_name):
     except WindowsError:
         return None
 
-# Function to get specific registry data
+import winreg
+
+def get_registry_value(key, subkey, value_name):
+    try:
+        with winreg.OpenKey(key, subkey) as registry_key:
+            value, regtype = winreg.QueryValueEx(registry_key, value_name)
+            return value
+    except FileNotFoundError:
+        return "Not found"
+    except Exception as e:
+        return f"Error: {e}"
+
 def get_registry_data():
     key = winreg.HKEY_LOCAL_MACHINE
     registry_data = {
-        r"SOFTWARE\Microsoft\Windows NT\CurrentVersion": ["InstallationID", "ProductID"],
+        r"SOFTWARE\Microsoft\Windows NT\CurrentVersion": ["InstallationID", "ProductID", "BuildGUID", "RegisteredOrganization", "RegisteredOwner"],
         r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\SoftwareProtectionPlatform": ["BackupProductKeyDefault"],
         r"SOFTWARE\Microsoft\SQMClient": ["MachineId"],
         r"SYSTEM\CurrentControlSet\Control\IDConfigDB\Hardware Profiles\0001": ["HwProfileGuid", "BIOSReleaseDate", "BIOSVersion", "ComputerHardwareId"],
@@ -116,6 +125,9 @@ def get_registry_data():
             value = get_registry_value(key, subkey, value_name)
             registry_output += f"{value_name}: {value}\n"
     return registry_output
+
+# Example usage
+#print(get_registry_data())
 
 # Function to get USB device information
 def get_usb_devices():
@@ -138,6 +150,30 @@ def get_usb_devices():
     for name, vid, pid in devices:
         usb_output += f"Name: {name}, VID: 0x{vid}, PID: 0x{pid}\n"
     return usb_output
+
+def get_network_mac_address():
+    try:
+        output = subprocess.getoutput("getmac /fo csv /v")
+        lines = output.splitlines()
+        mac_addresses = []
+
+        for line in lines:
+            parts = line.replace('"', '').split(',')
+            if len(parts) > 2:
+                mac_address = parts[1].strip()
+                name = parts[2].strip()
+                if mac_address and mac_address != 'N/A':
+                    mac_addresses.append(f"{name}  {mac_address}")
+
+        if mac_addresses:
+            mac_output = "\n".join(mac_addresses) + "\n"
+        else:
+            mac_output = "No MAC addresses found.\n"
+        
+        return mac_output
+    except Exception as e:
+        return f"Error getting network MAC addresses: {e}"
+
 
 OUTPUT_FILE = "getSerial_py.txt"
 current_username = os.getlogin()
@@ -177,8 +213,8 @@ with open(OUTPUT_FILE, "w") as output_file:
     output_file.write(subprocess.getoutput("vol D:"))
     output_file.write(subprocess.getoutput("vol E:"))
 
-    output_file.write("\n\nNetwork Adapter Information:\n")
-    output_file.write(subprocess.getoutput('wmic nic where "NetConnectionStatus=2" get Name,macaddress'))
+    #output_file.write("\n\nNetwork Adapter Information:\n")
+    #output_file.write(subprocess.getoutput('wmic nic where "NetConnectionStatus=2" get Name,macaddress'))
 
     public_ip = get_public_ip()
     output_file.write(f"Indirizzo IP pubblico: {public_ip}\n\n")
@@ -192,6 +228,9 @@ with open(OUTPUT_FILE, "w") as output_file:
         output_file.write(f"Indirizzo MAC del router: {router_mac}\n\n")
     else:
         output_file.write("Indirizzo MAC del router non trovato.\n\n")
+
+    output_file.write("\n\nMAC Addresses:\n")
+    output_file.write(get_network_mac_address())
 
     output_file.write("\n\nNVIDIA GPU UUID Information:\n")
     output_file.write(subprocess.getoutput('nvidia-smi --query-gpu=gpu_name,uuid --format=csv'))
@@ -214,3 +253,4 @@ with open(OUTPUT_FILE, "w") as output_file:
     output_file.write(get_usb_devices())
 
 print(f"Results have been saved to {OUTPUT_FILE}")
+
