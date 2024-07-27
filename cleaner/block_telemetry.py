@@ -59,14 +59,7 @@ def block_telemetry_domains():
                 "127.0.0.1 wes.df.telemetry.microsoft.com",
                 "127.0.0.1 willcroftg.services.ms",
                 "127.0.0.1 www.msftncsi.com",
-                
-                # Discord
-                "127.0.0.1 discordapp.com",
-                "127.0.0.1 www.discordapp.com",
-                "127.0.0.1 cdn.discordapp.com",
-                "127.0.0.1 status.discordapp.com",
-                "127.0.0.1 telemetry.discordapp.com",
-                
+                              
                 # Nvidia
                 "127.0.0.1 telemetry.nvidia.com",
                 "127.0.0.1 gfe.nvidia.com",
