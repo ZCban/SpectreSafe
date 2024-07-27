@@ -96,26 +96,6 @@ class Spoofer:
                 logging.error(f"Error modifying RegisteredOrganization: {e}")
                 return False
 
-    class RegisteredOwner:
-        @staticmethod
-        def generate_owner_id():
-            part1 = ''.join(random.choices('0123456789', k=9))
-            part2 = ''.join(random.choices('0123456789', k=9))
-            part3 = ''.join(random.choices('0123456789', k=9))
-            return f"{part1}-{part2}-{part3}"
-
-        @staticmethod
-        def spoof():
-            try:
-                with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", 0, winreg.KEY_ALL_ACCESS) as key:
-                    old_value, _ = winreg.QueryValueEx(key, "RegisteredOwner")
-                    new_value = Spoofer.RegisteredOwner.generate_owner_id()
-                    winreg.SetValueEx(key, "RegisteredOwner", 0, winreg.REG_SZ, new_value)
-                    Spoofer.log_change("RegisteredOwner", old_value, new_value)
-                    return True
-            except Exception as e:
-                logging.error(f"Error modifying RegisteredOwner: {e}")
-                return False
 
     class DigitalProductId:
         @staticmethod
@@ -1175,7 +1155,6 @@ if __name__ == "__main__":
     Spoofer.PowerShellExecutionPolicyManager.allow_script_pw()
     Spoofer.BuildGUID.spoof()
     Spoofer.RegisteredOrganization.spoof()
-    Spoofer.RegisteredOwner.spoof()
     #Spoofer.DigitalProductId.spoof()# IT CHANGES WHEN YOU CHANGE YOUR WINDOWS ACTIVATION KEY
     #Spoofer.DigitalProductId4.spoof()# IT CHANGES WHEN YOU CHANGE YOUR WINDOWS ACTIVATION KEY
     Spoofer.MachineId.spoof()
