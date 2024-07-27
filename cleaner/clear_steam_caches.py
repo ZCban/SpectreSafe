@@ -24,7 +24,8 @@ def clear_steam_caches():
         os.path.join(steam_path, 'config'),
         os.path.join(steam_path, 'htmlcache'),
         os.path.join(steam_path, 'steamapps', 'downloading'),
-        os.path.join(steam_path, 'depotcache')
+        os.path.join(steam_path, 'depotcache'),
+        os.path.join(steam_path, 'logs')  # Aggiunta della cartella Logs
     ]
 
     for directory in cache_directories:
@@ -33,3 +34,4 @@ def clear_steam_caches():
 
 # Esegui la pulizia delle cache di Steam
 clear_steam_caches()
+
