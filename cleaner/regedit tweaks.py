@@ -206,6 +206,40 @@ def enable_auto_date_time():
     except Exception as e:
         print("Errore durante l'abilitazione della data e dell'ora automatiche:", str(e))
 
+def disable_recent_files():
+    try:
+        # Disables recent files feature
+        key_path = r"Software\Microsoft\Windows\CurrentVersion\Policies\Explorer"
+        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path, 0, winreg.KEY_SET_VALUE)
+        winreg.SetValueEx(key, "NoRecentDocsHistory", 0, winreg.REG_DWORD, 1)
+        winreg.CloseKey(key)
+        print("Recent files feature disabled successfully.")
+    except Exception as e:
+        print(f"Error while disabling recent files feature: {e}")
+
+def disable_task_view_timeline():
+    try:
+        key_path = r"Software\Microsoft\Windows\CurrentVersion\Privacy"
+        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path, 0, winreg.KEY_SET_VALUE)
+        winreg.SetValueEx(key, "TailoredExperiencesWithDiagnosticDataEnabled", 0, winreg.REG_DWORD, 0)
+        winreg.CloseKey(key)
+        print("Visualizzazione delle attività disabilitata con successo.")
+    except Exception as e:
+        print(f"Errore durante la disattivazione della Visualizzazione delle attività: {e}")
+
+def disable_search_history():
+    try:
+        key_path = r"Software\Policies\Microsoft\Windows\Explorer"
+        # Apri o crea la chiave di registro
+        key = winreg.CreateKey(winreg.HKEY_CURRENT_USER, key_path)
+        # Imposta il valore DWORD
+        winreg.SetValueEx(key, "DisableSearchBoxSuggestions", 0, winreg.REG_DWORD, 1)
+        winreg.CloseKey(key)
+        print("Cronologia di ricerca in Esplora File disabilitata con successo.")
+    except Exception as e:
+        print(f"Errore durante la disattivazione della cronologia di ricerca: {e}")
+
+
 # Example usage:
 device_input_dalay()
 improve_screencapture()
@@ -218,3 +252,7 @@ disable_notifications()
 disable_onedrive()
 enable_show_hidden_files()
 enable_auto_date_time()
+disable_recent_files()
+disable_task_view_timeline()
+disable_search_history()
+
