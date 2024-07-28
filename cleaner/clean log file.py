@@ -4,7 +4,7 @@ def find_log_files(start_dir):
     log_files = []
     for root, _, filenames in os.walk(start_dir):
         for filename in filenames:
-            if filename.endswith('.log'):
+            if filename.endswith(('.log', '.LOG2', '.LOG1')):
                 log_files.append(os.path.join(root, filename))
     return log_files
 
@@ -37,3 +37,4 @@ for log_file in log_files:
 report_file = 'deleted_log_files_report.txt'
 delete_log_files(log_files, report_file)
 print(f"Report saved to {report_file}")
+
