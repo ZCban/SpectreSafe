@@ -8,6 +8,9 @@ def pulisci_directory(percorso_directory):
     Args:
     percorso_directory (str): Il percorso della directory da pulire.
     """
+    # Espandi il percorso utente e rendilo assoluto
+    percorso_directory = os.path.expanduser(percorso_directory)
+    
     # Verifica che la directory esista
     if os.path.exists(percorso_directory):
         # Scorri attraverso tutti i file nella directory
@@ -28,4 +31,4 @@ def pulisci_directory(percorso_directory):
         print(f"La directory {percorso_directory} non esiste.")
 
 # Esempio di utilizzo
-pulisci_directory(r"C:\Users\dd\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine")
+pulisci_directory("~/AppData/Roaming/Microsoft/Windows/PowerShell/PSReadLine")
