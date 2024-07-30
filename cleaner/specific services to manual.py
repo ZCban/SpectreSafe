@@ -1,13 +1,19 @@
 import subprocess
+import threading
+
+# Creazione di un lock per sincronizzare l'accesso all'output
+print_lock = threading.Lock()
 
 def set_service_manual(service_name):
     try:
         # Comando PowerShell per impostare il servizio in modalità manuale
         command = f'Set-Service -Name "{service_name}" -StartupType "Manual"'
         subprocess.run(['powershell', '-Command', command], check=True)
-        print(f"Il servizio {service_name} è stato impostato su manuale.")
+        with print_lock:
+            print(f"servizio {service_name} impostato  manuale.")
     except subprocess.CalledProcessError as e:
-        print(f"Errore durante l'impostazione del servizio {service_name}")
+        with print_lock:
+            print(f"Errore  servizio {service_name}")
 
 # Lista dei servizi da impostare su manuale
 services_to_set_manual = [
@@ -63,8 +69,33 @@ services_to_set_manual = [
     "RetailDemo",           # Retail Demo Service
 ]
 
-# Imposta ciascun servizio in modalità manuale
+
+# Numero massimo di thread in esecuzione contemporaneamente
+max_threads = 3
+
+# Lista per tracciare i thread attivi
+active_threads = []
+
 for service in services_to_set_manual:
-    set_service_manual(service)
+    while len(active_threads) >= max_threads:
+        # Aspetta che almeno un thread termini
+        for thread in active_threads:
+            if not thread.is_alive():
+                active_threads.remove(thread)
+                break
+
+    # Crea e avvia un nuovo thread
+    thread = threading.Thread(target=set_service_manual, args=(service,))
+    active_threads.append(thread)
+    thread.start()
+
+# Aspetta che tutti i thread terminino
+for thread in active_threads:
+    thread.join()
+
+print("Tutti i servizi sono stati impostati su manuale.")
+
+
+
 
 
