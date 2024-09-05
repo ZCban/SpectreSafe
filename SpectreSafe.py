@@ -579,41 +579,102 @@ class Spoofer:
         @staticmethod
         def spoof():
             ps_script_content = """
-            # Percorso del file di log sul desktop
-            $logFilePath = [System.IO.Path]::Combine([System.Environment]::GetFolderPath("Desktop"), "ChangeMAC_Log.txt")
+            # Percorso del file di log aggiornato
+            $logFilePath = "C:\\Users\\Admin\\Desktop\\logfile.txt"
 
-            # Identifica tutte le schede di rete attive
-            $activeNetworkAdapters = Get-NetAdapter | Where-Object { $_.Status -eq 'Up' }
+            # Metodo per cambiare il MAC address di un adattatore di rete nel registro di sistema
+            function Change-MacAddressInRegistry {
+                param (
+                    [Parameter(Mandatory=$true)]
+                    [Microsoft.Management.Infrastructure.CimInstance]$adapter
+                )
+                
+                try {
+                    # Legge il vecchio indirizzo MAC e genera un nuovo indirizzo MAC
+                    $oldMAC = $adapter.MacAddress
+                    $newDigits = -join ((48..57) + (65..70) | Get-Random -Count 4 | ForEach-Object { [char]$_ })
+                    $newMAC = $oldMAC.Substring(0,12) +  $newDigits.Substring(0,2) + '-' + $newDigits.Substring(2,2)
 
-            foreach ($adapter in $activeNetworkAdapters) {
-                # Legge il vecchio indirizzo MAC e genera un nuovo indirizzo MAC
-                $oldMAC = $adapter.MacAddress
-                $newDigits = -join ((48..57) + (65..70) | Get-Random -Count 4 | ForEach-Object { [char]$_ })
-                $newMAC = $oldMAC.Substring(0,12) +  $newDigits.Substring(0,2) + '-' + $newDigits.Substring(2,2)
+                    Write-Host "Generato nuovo MAC per $($adapter.Name): $newMAC"
 
-                # Imposta il nuovo indirizzo MAC
-                Set-NetAdapter -Name $adapter.Name -MacAddress $newMAC -Confirm:$false
+                    # Disabilita la scheda di rete prima di apportare modifiche al registro
+                    Disable-NetAdapter -Name $adapter.Name -Confirm:$false
+                    Write-Host "Scheda $($adapter.Name) disabilitata"
 
-                # Disabilita e riabilita la scheda di rete
-                Disable-NetAdapter -Name $adapter.Name -Confirm:$false
-                Enable-NetAdapter -Name $adapter.Name
+                    # Verifica della chiave di registro
+                    $registryPath = "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}"
+                    $adapterDescription = $adapter.InterfaceDescription
 
-                # Registra l'operazione nel file di log
-                $logEntry = "Data: $(Get-Date) | Scheda di rete: $($adapter.Name) | Vecchio indirizzo MAC: $oldMAC | Nuovo indirizzo MAC: $newMAC"
-                Add-Content -Path $logFilePath -Value $logEntry
+                    # Scansione delle sottochiavi alla ricerca di una corrispondenza con la descrizione dell'adattatore
+                    Get-ChildItem -Path $registryPath | ForEach-Object {
+                        $subKey = $_.PSChildName
+                        $subKeyPath = Join-Path -Path $registryPath -ChildPath $subKey
+                        $driverDesc = Get-ItemProperty -Path $subKeyPath -Name "DriverDesc" -ErrorAction SilentlyContinue
+
+                        if ($driverDesc.DriverDesc -eq $adapterDescription) {
+                            Write-Host "Trovata chiave di registro per l'adattatore $($adapter.Name) con descrizione: $adapterDescription"
+
+                            # Creazione dei valori stringa NetworkAddress e MAC
+                            New-ItemProperty -Path $subKeyPath -Name "NetworkAddress" -Value $newMAC -PropertyType "String" -Force | Out-Null
+                            New-ItemProperty -Path $subKeyPath -Name "MAC" -Value $newMAC -PropertyType "String" -Force | Out-Null
+
+                            Write-Host "Valori di registro 'NetworkAddress' e 'MAC' creati per $adapterDescription"
+
+                            $logEntry = "Data: $(Get-Date) | Scheda di rete: $($adapter.Name) | Vecchio indirizzo MAC: $oldMAC | Nuovo indirizzo MAC: $newMAC | Modificato nel registro"
+                            Add-Content -Path $logFilePath -Value $logEntry
+                        }
+                    }
+
+                    # Riabilita la scheda di rete per applicare la modifica
+                    Enable-NetAdapter -Name $adapter.Name -Confirm:$false
+                    Write-Host "Scheda $($adapter.Name) riabilitata"
+
+                    # Verifica se il nuovo MAC è attivo
+                    $activeMacs = (getmac | Select-String -Pattern '([0-9A-F]{2}-){5}[0-9A-F]{2}' -AllMatches).Matches | ForEach-Object { $_.Value }
+                    if ($activeMacs -contains $newMAC) {
+                        Write-Host "Nuovo MAC $newMAC verificato con successo per $($adapter.Name)."
+                        # Registra l'operazione nel file di log
+                        $logEntry = "Data: $(Get-Date) | Scheda di rete: $($adapter.Name) | Nuovo indirizzo MAC $newMAC verificato con successo."
+                        Add-Content -Path $logFilePath -Value $logEntry
+                    } else {
+                        Write-Host "Errore: Nuovo MAC $newMAC non trovato per la scheda $($adapter.Name)."
+                        # Registra l'errore nel file di log
+                        $logEntry = "Data: $(Get-Date) | Scheda di rete: $($adapter.Name) | Errore: Nuovo MAC $newMAC non trovato. Il cambio MAC potrebbe non essere riuscito."
+                        Add-Content -Path $logFilePath -Value $logEntry
+                    }
+                } catch {
+                    Write-Host "Errore durante il tentativo di cambiare il MAC address per $($adapter.Name): $_"
+                    $logEntry = "Data: $(Get-Date) | Scheda di rete: $($adapter.Name) | Errore: $_"
+                    Add-Content -Path $logFilePath -Value $logEntry
+                }
             }
 
-            # Aspetta che tutte le schede di rete siano riabilitate
-            Start-Sleep -Seconds 5
+            # Esegui il comando Getmac e memorizza i risultati filtrati
+            $macAddresses = Getmac | Where-Object { $_ -notmatch "N/D" }
 
-            # Cancella la cache ARP e rinnova l'indirizzo IP utilizzando cmd.exe per questi comandi
-            Start-Process cmd.exe -ArgumentList "/c arp -d *" -Verb RunAs -WindowStyle Hidden
-            Start-Process cmd.exe -ArgumentList "/c ipconfig /release && ipconfig /renew" -Verb RunAs -WindowStyle Hidden
+            # Estrai solo gli indirizzi MAC dalla lista filtrata
+            $macList = $macAddresses -replace "\\s+.*", ""
 
-            # Aggiunge una nota finale nel file di log
-            Add-Content -Path $logFilePath -Value "Cache ARP pulita e indirizzo IP rinnovato. | Data: $(Get-Date)"
+            # Ottieni le informazioni sugli adattatori di rete corrispondenti agli indirizzi MAC filtrati
+            $netAdapters = Get-NetAdapter | Where-Object { $macList -contains $_.MacAddress }
 
-            Write-Host "Operazione completata. Dettagli salvati in: $logFilePath" 
+            # Applica il cambiamento del MAC address solo agli adattatori filtrati
+            foreach ($adapter in $netAdapters) {
+                try {
+                    Change-MacAddressInRegistry -adapter $adapter
+                } catch {
+                    Write-Host "Errore durante il cambio del MAC per $($adapter.Name): $_"
+                    $logEntry = "Data: $(Get-Date) | Scheda di rete: $($adapter.Name) | Errore durante il cambio del MAC: $_"
+                    Add-Content -Path $logFilePath -Value $logEntry
+                }
+            }
+
+            # Flush DNS, reset IP, reset Winsock, and clear ARP cache
+            Write-Host "Eseguendo flush DNS, reset IP, reset Winsock, e clear ARP cache..."
+            ipconfig /flushdns
+            netsh int ip reset
+            netsh winsock reset
+            netsh interface ip delete arpcache
             """
 
             # Imposta il percorso e il nome del file dello script PowerShell
@@ -626,15 +687,21 @@ class Spoofer:
                 ps_script_file.write(ps_script_content)
 
             # Comando per eseguire lo script PowerShell come amministratore
-            run_as_admin_command = f"powershell Start-Process powershell -ArgumentList '-File {ps_script_path}' -Verb RunAs"
+            run_as_admin_command = [
+                "powershell.exe",
+                "-NoProfile",
+                "-ExecutionPolicy", "Bypass",
+                "-Command", f"Start-Process powershell.exe -ArgumentList '-NoProfile -ExecutionPolicy Bypass -File \"{ps_script_path}\"' -Verb RunAs"
+            ]
 
             # Esegue lo script PowerShell come amministratore
             try:
                 subprocess.run(run_as_admin_command, shell=True, check=True)
                 logging.info("MAC address spoofing script executed successfully.")
                 time.sleep(10)  # Attendere un po' più a lungo per assicurarsi che il file di log sia scritto
+
                 # Legge e logga il contenuto del file di log
-                log_file_path = os.path.join(desktop_path, "ChangeMAC_Log.txt")
+                log_file_path = os.path.join(desktop_path, "logfile.txt")
                 if os.path.exists(log_file_path):
                     with open(log_file_path, "r") as log_file:
                         log_contents = log_file.read()
@@ -1174,9 +1241,12 @@ if __name__ == "__main__":
     Spoofer.MacAddressSpoofer.spoof()
     Spoofer.spoof_display_edid()
     Spoofer.DMISpoofer.spoof_dmi()
-    run_python_files_in_cleaner()
     Spoofer.ComputerUserRenamer.spoof()# use for last
     Spoofer.AutoRestart.spoof()
+
+
+
+
 
 
 
