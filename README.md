@@ -2,8 +2,6 @@
 
 This script provides comprehensive functionality to spoof various hardware and software identifiers on a Windows machine, enhancing user privacy and security. It modifies system registry entries, executes system commands, and manipulates data to alter machine. However, it does not change the serial numbers of SSDs, GPU UUIDs, or RAM serial numbers.
 
-Additionally, the script provides powerful system maintenance features, including extensive system cleaning, service management, and removal of non-connected devices. These capabilities collectively improve system performance and safeguard user privacy.
-
 ## Features
 
 **PowerShell Script Unlocking**: Enables the execution of PowerShell scripts by changing the execution policy.
