@@ -48,31 +48,6 @@ Additionally, the script provides powerful system maintenance features, includin
 - **Processor Asset Tag Spoofing**: Changes the processor asset tag.
 - **Before and After Report Generation**: Generates reports before and after spoofing to verify changes.
 
-**Service Management**: Sets specified services to manual start and removes non-connected devices. This is managed by the ServiceManager class, which includes:
-
-- **Setting Services to Manual Start**: The script sets the startup type of various services to manual. These services include AdobeARMservice, DropboxUpdate, Steam Client Service, and many others. The set_services_to_manual method iterates through a predefined list of services, changing their startup type to manual.
-- **Removing Non-Connected Devices**: The script uses PowerShell to list all PnP devices and removes those that are not currently connected. The remove_non_connected_devices method retrieves the list of devices and removes the non-connected ones using the pnputil command.
-
-**System Cleaning**: Cleans system files and browser data, including:
-
-- **Clean Temporary System Files**: Uses the cleanmgr utility to remove temporary files and deletes temporary files from the system's temp folder.
-- **Clean Windows Log Files**: Deletes log files from the Windows logs directory and cleans logs from the Panther directory.
-- **Clean DNS Cache**: Flushes the DNS cache to remove any old or invalid DNS entries.
-- **Reset DNS Client and TCP/IP Settings**: Deletes the ARP cache, resets Winsock settings, and resets IP configurations.
-- **Clean Windows Error Reporting**: Deletes Windows error reporting minidumps and clears Windows event logs.
-- **Remove Obsolete Installation Files**: Uses the Dism utility to clean up the component store and obsolete Windows update files.
-- **Clean User Downloads Folder**: Deletes files from the user's Downloads folder.
-- **Clean Recycle Bin**: Empties the Recycle Bin.
-- **Clean System Restore Files**: Deletes all system restore points.
-- **Optimize Boot Configuration**: Adjusts boot configuration to ignore all boot failures.
-- **Clear Scheduled Tasks**: Deletes all scheduled tasks.
-- **Reset Firewall Rules**: Resets Windows Firewall rules to default settings.
-- **Clear USB Device History**: Deletes the registry entries for USB devices.
-- **Clear Browser Data**: Deletes cache, cookies, history, session data, and download metadata for installed browsers (Google Chrome, Mozilla Firefox, Microsoft Edge, Opera, Brave).
-- **Disable automatic paging**
-- **Disable ReadyBoost and Memory Compression**
-- **Disable Notification**
-- **Disable UAC**
 
 ## Installation
 
