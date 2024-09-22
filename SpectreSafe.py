@@ -18,9 +18,20 @@ TEXTSIZE = 256
 MAX_EDID_BLOCKS = 4
 MAX_EDID_EXTENSION_BLOCKS = 1
 
-# Setup logging
-logging.basicConfig(filename='spoofer_log.txt', level=logging.INFO, format='%(asctime)s [SPOOFER] %(message)s')
+# Percorso della cartella di log
+log_folder = 'log'
+log_file_path = os.path.join(log_folder, 'spoofer_log.txt')
 
+# Crea la cartella di log se non esiste
+if not os.path.exists(log_folder):
+    os.makedirs(log_folder)
+
+# Verifica se il file di log esiste già e lo elimina se presente
+if os.path.exists(log_file_path):
+    os.remove(log_file_path)
+
+# Configura il logging per creare un nuovo file di log nella cartella specificata
+logging.basicConfig(filename=log_file_path, level=logging.INFO, format='%(asctime)s [SPOOFER] %(message)s')
 
 class Spoofer:
     def write_log(message):
@@ -1216,37 +1227,5 @@ def run_python_files_in_cleaner():
         file_path = os.path.join(cleaner_directory, python_file)
         print(f"Eseguendo {python_file}...")
         subprocess.run(['python', file_path])
-
-                    
-if __name__ == "__main__":
-    Spoofer.PowerShellExecutionPolicyManager.allow_script_pw()
-    Spoofer.BuildGUID.spoof()
-    Spoofer.RegisteredOrganization.spoof()
-    #Spoofer.DigitalProductId.spoof()# IT CHANGES WHEN YOU CHANGE YOUR WINDOWS ACTIVATION KEY
-    #Spoofer.DigitalProductId4.spoof()# IT CHANGES WHEN YOU CHANGE YOUR WINDOWS ACTIVATION KEY
-    Spoofer.MachineId.spoof()
-    Spoofer.HardwareGUID.spoof()
-    Spoofer.MachineGUID.spoof()
-    Spoofer.EFIVariables.spoof()
-    Spoofer.SystemInfo.spoof()
-    Spoofer.OSInstallDate.spoof()
-    Spoofer.SystemInfoExtended.spoof()
-    Spoofer.ProductId.spoof()
-    Spoofer.InstallationID.spoof()
-    #Spoofer.NvidiaSettings.modify_registry_ClientUUID()# IT CHANGES WHEN YOU REINSTALL NVIDIA CLIENT
-    #Spoofer.NvidiaSettings.modify_registry_ChipsetMatchID()# DO NOT USE ERROR TEST IN THE GRAPHICS DRIVER
-    Spoofer.RenameDiskSpoofer.spoof()
-    Spoofer.DiskSpoofer.list_disks_and_spoof_unique_ids()
-    Spoofer.VolumeSerialNumberSpoofer.spoof_volume_serial_numbers()
-    Spoofer.MacAddressSpoofer.spoof()
-    Spoofer.spoof_display_edid()
-    Spoofer.DMISpoofer.spoof_dmi()
-    Spoofer.ComputerUserRenamer.spoof()# use for last
-    Spoofer.AutoRestart.spoof()
-
-
-
-
-
 
 
