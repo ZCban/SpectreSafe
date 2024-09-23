@@ -1,6 +1,7 @@
 **SpectreSafe**
 
 This script provides comprehensive functionality to spoof various hardware and software identifiers on a Windows machine, enhancing user privacy and security. It modifies system registry entries, executes system commands, and manipulates data to alter machine. However, it does not change the serial numbers of SSDs, GPU UUIDs, or RAM serial numbers.
+NOW SUPPORT Custom MAC Address Generation: For "TAP-NordVPN Windows Provider V9"
 
 ## Features
 
