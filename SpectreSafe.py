@@ -601,11 +601,18 @@ class Spoofer:
                 )
                 
                 try {
-                    # Legge il vecchio indirizzo MAC e genera un nuovo indirizzo MAC
+                    # Legge il vecchio indirizzo MAC
                     $oldMAC = $adapter.MacAddress
-                    $newDigits = -join ((48..57) + (65..70) | Get-Random -Count 4 | ForEach-Object { [char]$_ })
-                    $newMAC = $oldMAC.Substring(0,12) +  $newDigits.Substring(0,2) + '-' + $newDigits.Substring(2,2)
-
+                    if ($adapter.InterfaceDescription -eq "TAP-NordVPN Windows Provider V9") {
+                        $validPrefixes = @("02", "06", "0A", "0E", "12")
+                        $prefix = $validPrefixes | Get-Random
+                        $newDigits = -join ((48..57) + (65..70) | Get-Random -Count 10 | ForEach-Object { [char]$_ })
+                        $newMAC = $prefix + $newDigits.Substring(0,10)
+                    } else {
+                        $newDigits = -join ((48..57) + (65..70) | Get-Random -Count 4 | ForEach-Object { [char]$_ })
+                        $newMAC = $oldMAC.Substring(0,12) +  $newDigits.Substring(0,2) + '-' + $newDigits.Substring(2,2)
+                    }
+                    
                     Write-Host "Generato nuovo MAC per $($adapter.Name): $newMAC"
 
                     # Disabilita la scheda di rete prima di apportare modifiche al registro
