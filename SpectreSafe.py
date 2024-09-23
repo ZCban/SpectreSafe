@@ -603,11 +603,14 @@ class Spoofer:
                 try {
                     # Legge il vecchio indirizzo MAC
                     $oldMAC = $adapter.MacAddress
-                    if ($adapter.InterfaceDescription -eq "TAP-NordVPN Windows Provider V9") {
+                    # Lista di descrizioni di adattatori specifici per il cambio MAC
+                    $targetDescriptions = @("TAP-NordVPN Windows Provider V9", "TAP-NordVPN Windows Adapter V9")
+                
+                    if ($adapter.InterfaceDescription -in $targetDescriptions) {
                         $validPrefixes = @("02", "06", "0A", "0E", "12")
                         $prefix = $validPrefixes | Get-Random
                         $newDigits = -join ((48..57) + (65..70) | Get-Random -Count 10 | ForEach-Object { [char]$_ })
-                        $newMAC = $prefix + $newDigits.Substring(0,10)
+                        $newMAC = ($prefix + $newDigits.Substring(0,10)) -replace '(.{2})', '$1-' -replace '-$',''
                     } else {
                         $newDigits = -join ((48..57) + (65..70) | Get-Random -Count 4 | ForEach-Object { [char]$_ })
                         $newMAC = $oldMAC.Substring(0,12) +  $newDigits.Substring(0,2) + '-' + $newDigits.Substring(2,2)
