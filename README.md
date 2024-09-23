@@ -46,7 +46,7 @@ This script provides comprehensive functionality to spoof various hardware and s
 - **Processor Asset Tag Spoofing**: Changes the processor asset tag.
 - **Before and After Report Generation**: Generates reports before and after spoofing to verify changes.
 
-- **[NEW] Custom MAC Address Generation: For "TAP-NordVPN Windows Provider V9"
+**[NEW] Custom MAC Address Generation: For "TAP-NordVPN Windows Provider V9" 23/09/2024
 
 ## Installation
 
