@@ -174,6 +174,19 @@ def get_network_mac_address():
     except Exception as e:
         return f"Error getting network MAC addresses: {e}"
 
+def get_4k_hash():
+    try:
+        # PowerShell command to get the 4K-Hash (DeviceHardwareData)
+        powershell_command = "(Get-CimInstance -Namespace root/cimv2/mdm/dmmap -Class MDM_DevDetail_Ext01 -Filter \"InstanceID='Ext' AND ParentID='./DevDetail'\").DeviceHardwareData"
+        result = subprocess.run(['powershell', '-Command', powershell_command], capture_output=True, text=True)
+        
+        if result.returncode == 0:
+            return result.stdout.strip()  # Return the 4K-Hash output
+        else:
+            return f"Error: {result.stderr}"  # Return any error from PowerShell execution
+    except Exception as e:
+        return f"Exception occurred: {e}"
+
 
 OUTPUT_FILE = "getSerial_py.txt"
 current_username = os.getlogin()
@@ -189,6 +202,9 @@ with open(OUTPUT_FILE, "w") as output_file:
     output_file.write("\n\nUser Accounts (filtered):\n")
     user_accounts = subprocess.getoutput("wmic useraccount get name,sid")
     output_file.write(user_accounts)
+
+    output_file.write("\n\nUUID:\n")
+    output_file.write(subprocess.getoutput("wmic csproduct get UUID"))
 
     output_file.write("\n\nBIOS Serial Number:\n")
     output_file.write(subprocess.getoutput("wmic bios get serialnumber"))
@@ -248,6 +264,9 @@ with open(OUTPUT_FILE, "w") as output_file:
 
     output_file.write("\n\nRegistry Data:\n")
     output_file.write(get_registry_data())
+
+    output_file.write("\n\n4K-Hash (DeviceHardwareData):\n")
+    output_file.write(get_4k_hash())
 
     output_file.write("\n\nUSB Devices:\n")
     output_file.write(get_usb_devices())
