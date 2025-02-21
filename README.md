@@ -50,6 +50,8 @@ This script provides comprehensive functionality to spoof various hardware and s
 
 **[NEW] Custom MAC Address Generation: For "TAP-NordVPN Windows Provider V9" 23/09/2024
 
+**[NEW] The only way to edit the tpm serial is to disable the cpu tpm and replace it with an external tpm by reinstalling from 0 windows, without reinstalling windows it will not read the new tpm saying that no tpm is activated
+
 ## Installation
 
 1. **Clone the repository:**
