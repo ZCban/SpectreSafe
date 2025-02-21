@@ -48,7 +48,9 @@ This script provides comprehensive functionality to spoof various hardware and s
 - **Processor Asset Tag Spoofing**: Changes the processor asset tag.
 - **Before and After Report Generation**: Generates reports before and after spoofing to verify changes.
 
-**[NEW] Custom MAC Address Generation: For "TAP-NordVPN Windows Provider V9" 23/09/2024
+**[NEW] Custom MAC Address Generation: For "TAP-NordVPN Windows Provider V9" 23/09/2024 (Nord vpn)
+
+**[NEW] Custom MAC Address Generation: For "TAP-Windows Adapter V9" 21/02/2025 (CyberGhost 8 vpn)
 
 **[NEW] The only way to edit the tpm serial is to disable the cpu tpm and replace it with an external tpm by reinstalling from 0 windows, without reinstalling windows it will not read the new tpm saying that no tpm is activated
 
