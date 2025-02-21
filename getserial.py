@@ -29,7 +29,7 @@ def get_router_mac_address():
                 continue  # Skip lines that don't have enough data
             ip_address, mac_address, type = parts[0], parts[1], parts[2]
             # Look for a dynamic entry typically associated with a router in a home network
-            if ip_address.startswith('192.168.') and type.lower() == 'dynamic':
+            if ip_address.startswith('192.168.') and type.lower() == 'dynamic' or type.lower() == 'dinamico' :
                 return ip_address, mac_address
     except Exception as e:
         return f"Error in getting router MAC address: {e}"
@@ -100,8 +100,6 @@ def get_registry_value(key, subkey, value_name):
         return value
     except WindowsError:
         return None
-
-import winreg
 
 def get_registry_value(key, subkey, value_name):
     try:
@@ -278,3 +276,4 @@ with open(OUTPUT_FILE, "w") as output_file:
 
 
 print(f"Results have been saved to {OUTPUT_FILE}")
+
