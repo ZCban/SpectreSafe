@@ -604,7 +604,7 @@ class Spoofer:
                     # Legge il vecchio indirizzo MAC
                     $oldMAC = $adapter.MacAddress
                     # Lista di descrizioni di adattatori specifici per il cambio MAC
-                    $targetDescriptions = @("TAP-NordVPN Windows Provider V9", "TAP-NordVPN Windows Adapter V9")
+                    $targetDescriptions = @("TAP-NordVPN Windows Provider V9", "TAP-NordVPN Windows Adapter V9","TAP-Windows Adapter V9")
                 
                     if ($adapter.InterfaceDescription -in $targetDescriptions) {
                         $validPrefixes = @("02", "06", "0A", "0E", "12")
@@ -737,6 +737,7 @@ class Spoofer:
                 os.remove(ps_script_path)
                 if os.path.exists(log_file_path):
                     os.remove(log_file_path)
+
 
     class VolumeSerialNumberSpoofer:
         GENERIC_READ = 0x80000000
