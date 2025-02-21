@@ -17,15 +17,23 @@ def get_public_ip():
 
 # Function to get the router's MAC address
 def get_router_mac_address():
-    arp_output = subprocess.getoutput('arp -a')
-    for line in arp_output.split('\n'):
-        if 'Internet Address' in line or 'Interface' in line or line.strip() == '':
-            continue
-        parts = line.split()
-        ip_address, mac_address, type = parts[0], parts[1], parts[2]
-        if ip_address.startswith('192.168.') and type.lower() == 'dynamic':
-            return ip_address, mac_address
-    return None, None
+    try:
+        arp_output = subprocess.getoutput('arp -a')
+        for line in arp_output.split('\n'):
+            # Continue past headers or empty lines
+            if 'Interface' in line or line.strip() == '':
+                continue
+            parts = line.split()
+            # Ensure there are at least 3 parts to unpack (IP, MAC, and Type)
+            if len(parts) < 3:
+                continue  # Skip lines that don't have enough data
+            ip_address, mac_address, type = parts[0], parts[1], parts[2]
+            # Look for a dynamic entry typically associated with a router in a home network
+            if ip_address.startswith('192.168.') and type.lower() == 'dynamic':
+                return ip_address, mac_address
+    except Exception as e:
+        return f"Error in getting router MAC address: {e}"
+    return None, None  # Return None if no suitable entry was found
 
 # Function to get the local IP address
 def get_local_ip():
@@ -126,30 +134,14 @@ def get_registry_data():
             registry_output += f"{value_name}: {value}\n"
     return registry_output
 
-# Example usage
-#print(get_registry_data())
 
-# Function to get USB device information
+
 def get_usb_devices():
-    result = subprocess.run(['wmic', 'path', 'Win32_PnPEntity', 'where', 'PNPDeviceID like "USB%"', 'get', 'PNPDeviceID,Name'], capture_output=True, text=True)
-    lines = result.stdout.splitlines()[1:]  # Ignore header line
-    devices = []
+    # Comando PowerShell per ottenere dispositivi USB
+    cmd = ["powershell", "Get-PnpDevice -PresentOnly | Where-Object { $_.InstanceId -like '*USB*' } | Select-Object InstanceId, FriendlyName"]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    return result.stdout
 
-    for line in lines:
-        if line.strip():  # Ignore empty lines
-            parts = line.split()
-            name = " ".join(parts[:-1])  # Device name
-            pnp_id = parts[-1]           # PNPDeviceID
-            match = re.search(r'VID_([0-9A-F]{4})&PID_([0-9A-F]{4})', pnp_id)
-            if match:
-                vid = match.group(1)
-                pid = match.group(2)
-                devices.append((name, vid, pid))
-
-    usb_output = ""
-    for name, vid, pid in devices:
-        usb_output += f"Name: {name}, VID: 0x{vid}, PID: 0x{pid}\n"
-    return usb_output
 
 def get_network_mac_address():
     try:
@@ -174,63 +166,79 @@ def get_network_mac_address():
     except Exception as e:
         return f"Error getting network MAC addresses: {e}"
 
-def get_4k_hash():
+def get_volume_info(drive_letter):
     try:
-        # PowerShell command to get the 4K-Hash (DeviceHardwareData)
-        powershell_command = "(Get-CimInstance -Namespace root/cimv2/mdm/dmmap -Class MDM_DevDetail_Ext01 -Filter \"InstanceID='Ext' AND ParentID='./DevDetail'\").DeviceHardwareData"
-        result = subprocess.run(['powershell', '-Command', powershell_command], capture_output=True, text=True)
-        
-        if result.returncode == 0:
-            return result.stdout.strip()  # Return the 4K-Hash output
+        # Esegue il comando vol per il drive specificato
+        result = subprocess.getoutput(f"vol {drive_letter}:")
+        if "Impossibile trovare il percorso specificato" in result:
+            # Gestisce il caso in cui il volume non è presente
+            return f"{drive_letter}: Drive not found.\n"
         else:
-            return f"Error: {result.stderr}"  # Return any error from PowerShell execution
+            return f"{drive_letter}: {result}\n"
     except Exception as e:
-        return f"Exception occurred: {e}"
-
+        # Gestisce eventuali eccezioni durante l'esecuzione del comando
+        return f"{drive_letter}: Error retrieving volume information: {str(e)}\n"
 
 OUTPUT_FILE = "getSerial_py.txt"
 current_username = os.getlogin()
 current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+# Funzione per eseguire i comandi PowerShell e ottenere l'output
+def run_powershell_command(command):
+    return subprocess.getoutput(f"powershell -Command \"{command}\"")
+
 with open(OUTPUT_FILE, "w") as output_file:
     output_file.write(f"Autore: {current_username}\n")
     output_file.write(f"Data e ora di creazione: {current_datetime}\n\n")
     
+    # Ottiene il nome del sistema
     output_file.write("ComputerSystem Name:\n")
-    output_file.write(subprocess.getoutput("wmic computersystem get name"))
+    cs_name = run_powershell_command("Get-ComputerInfo -Property CsName")
+    output_file.write(cs_name + "\n\n")
+    
+    # Ottiene gli account utente
+    output_file.write("User Accounts (filtered):\n")
+    user_accounts = run_powershell_command("Get-LocalUser | Select-Object Name, SID | Format-Table -HideTableHeaders")
+    output_file.write(user_accounts + "\n\n")
+    
+    # Ottiene il numero di serie del BIOS
+    output_file.write("BIOS Serial Number:\n")
+    bios_serial = run_powershell_command("Get-WmiObject Win32_BIOS | Select-Object SerialNumber | Format-Table -HideTableHeaders")
+    output_file.write(bios_serial + "\n\n")
+    
+    # Ottiene il numero di serie della CPU (CPU ID)
+    output_file.write("CPU Serial Number:\n")
+    cpu_serial = run_powershell_command("Get-WmiObject Win32_Processor | Select-Object ProcessorId | Format-Table -HideTableHeaders")
+    output_file.write(cpu_serial + "\n\n")
+    
+    # Ottiene il numero di serie dell'involucro del sistema
+    output_file.write("System Enclosure Serial Number:\n")
+    system_enclosure_serial = run_powershell_command("Get-WmiObject Win32_SystemEnclosure | Select-Object SerialNumber | Format-Table -HideTableHeaders")
+    output_file.write(system_enclosure_serial + "\n\n")
+    
+    # Ottiene i numeri di serie della scheda madre
+    output_file.write("BaseBoard Serial Numbers:\n")
+    baseboard_serial = run_powershell_command("Get-WmiObject Win32_BaseBoard | Select-Object SerialNumber | Format-Table -HideTableHeaders")
+    output_file.write(baseboard_serial + "\n\n")
+    
+    # Ottiene i numeri di serie dei chip di memoria
+    output_file.write("Memory Chip Serial Numbers:\n")
+    memory_chip_serial = run_powershell_command("Get-WmiObject Win32_PhysicalMemory | Select-Object SerialNumber | Format-Table -HideTableHeaders")
+    output_file.write(memory_chip_serial + "\n\n")
+    
+    # Ottiene i numeri di serie dei dischi rigidi
+    output_file.write("Disk Drive SERIAL NUMBER:\n")
+    disk_drive_serial = run_powershell_command("Get-WmiObject Win32_DiskDrive | Select-Object Model, SerialNumber | Format-Table -HideTableHeaders")
+    output_file.write(disk_drive_serial + "\n")
 
-    output_file.write("\n\nUser Accounts (filtered):\n")
-    user_accounts = subprocess.getoutput("wmic useraccount get name,sid")
-    output_file.write(user_accounts)
-
-    output_file.write("\n\nUUID:\n")
-    output_file.write(subprocess.getoutput("wmic csproduct get UUID"))
-
-    output_file.write("\n\nBIOS Serial Number:\n")
-    output_file.write(subprocess.getoutput("wmic bios get serialnumber"))
-
-    output_file.write("\n\nCPU Serial Number:\n")
-    output_file.write(subprocess.getoutput("wmic cpu get serialnumber"))
-
-    output_file.write("\n\nSystem Enclosure Serial Number:\n")
-    output_file.write(subprocess.getoutput("wmic systemenclosure get serialnumber"))
-
-    output_file.write("\n\nBaseBoard Serial Numbers:\n")
-    output_file.write(subprocess.getoutput("wmic baseboard get serialnumber"))
-
-    output_file.write("\n\nMemory Chip Serial Numbers:\n")
-    output_file.write(subprocess.getoutput("wmic memorychip get serialnumber"))
-
-    output_file.write("\n\nDisk Drive SERIAL NUMBER:\n")
-    output_file.write(subprocess.getoutput("wmic diskdrive get model,serialnumber"))
-
-    output_file.write("\n\nDisk Serial Partition:\n")
-    output_file.write(subprocess.getoutput("vol C:"))
-    output_file.write(subprocess.getoutput("vol D:"))
-    output_file.write(subprocess.getoutput("vol E:"))
-
-    #output_file.write("\n\nNetwork Adapter Information:\n")
-    #output_file.write(subprocess.getoutput('wmic nic where "NetConnectionStatus=2" get Name,macaddress'))
+    # Scrive le informazioni sulle partizioni dei dischi
+    output_file.write("Disk Serial Partition:\n")
+    output_file.write(get_volume_info('C'))
+    output_file.write(get_volume_info('D'))
+    output_file.write(get_volume_info('E'))
+    output_file.write(get_volume_info('F'))
+    output_file.write(get_volume_info('G'))
+    output_file.write("\n")
 
     public_ip = get_public_ip()
     output_file.write(f"Indirizzo IP pubblico: {public_ip}\n\n")
@@ -265,11 +273,8 @@ with open(OUTPUT_FILE, "w") as output_file:
     output_file.write("\n\nRegistry Data:\n")
     output_file.write(get_registry_data())
 
-    output_file.write("\n\n4K-Hash (DeviceHardwareData):\n")
-    output_file.write(get_4k_hash())
-
     output_file.write("\n\nUSB Devices:\n")
     output_file.write(get_usb_devices())
 
-print(f"Results have been saved to {OUTPUT_FILE}")
 
+print(f"Results have been saved to {OUTPUT_FILE}")
