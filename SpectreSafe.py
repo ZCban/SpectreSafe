@@ -1202,6 +1202,54 @@ class Spoofer:
             else:
                 Spoofer.DMISpoofer.log_message(f"{file_to_find} not found.")
 
+    class PnpRemover:
+        @staticmethod
+        def get_pnp_devices_powershell():
+            """Ottiene i dispositivi PnP utilizzando PowerShell."""
+            command = "powershell -Command \"Get-PnpDevice | Select-Object -Property FriendlyName, Present, InstanceId | ConvertTo-Json\""
+            result = subprocess.run(command, capture_output=True, text=True, shell=True)
+
+            try:
+                devices = json.loads(result.stdout)
+                return devices if isinstance(devices, list) else [devices]  # Garantisce una lista anche con un solo elemento
+            except json.JSONDecodeError:
+                Spoofer.write_log("Errore nella decodifica JSON di Get-PnpDevice.")
+                return []
+
+        @staticmethod
+        def remove_device(instance_id):
+            """Rimuove un dispositivo usando il suo Instance ID con il comando pnputil."""
+            result = subprocess.run(["pnputil", "/remove-device", instance_id], capture_output=True, text=True)
+            return result.stdout
+
+        @staticmethod
+        def remove_non_connected_devices():
+            """Rimuove i dispositivi non collegati."""
+            devices = Spoofer.PnpRemover.get_pnp_devices_powershell()
+            non_connected_devices = [d for d in devices if not d["Present"]]
+
+            Spoofer.write_log("\nElenco dei dispositivi Non collegati:")
+            if non_connected_devices:
+                for device in non_connected_devices:
+                    Spoofer.write_log(f"{device['FriendlyName']} - Non collegato")
+
+                Spoofer.write_log("\nInizio rimozione dei dispositivi non collegati...")
+                for device in non_connected_devices:
+                    Spoofer.write_log(f"Rimozione del dispositivo: {device['FriendlyName']}")
+                    output = Spoofer.PnpRemover.remove_device(device["InstanceId"])
+                    Spoofer.write_log(output)
+
+                Spoofer.write_log("Rimozione completata.")
+            else:
+                Spoofer.write_log("Nessun dispositivo non collegato trovato.")
+
+            # Rimuove il file di log vecchio dal Desktop se esiste
+            desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
+            log_file = os.path.join(desktop_path, "OldDeviceLog.txt")
+            if os.path.exists(log_file):
+                os.remove(log_file)
+                Spoofer.write_log("Vecchio file di log rimosso dal Desktop.")
+
 
     class AutoRestart:
         @staticmethod
