@@ -113,6 +113,12 @@ def rename_computer_user():
     else:
         messagebox.showerror("Errore", "Errore durante la rinominazione del Computer/User")
 
+def remove_non_connected_devices():
+    if Spoofer.PnpRemover.remove_non_connected_devices():
+        messagebox.showinfo("Successo", "rimozione vecchi dispositivi con successo")
+    else:
+        messagebox.showerror("Errore", "Errore durante la rimozione vecchi dispositivi")
+
 def auto_restart():
     messagebox.showinfo("Riavvio", "Il sistema si riavvierà in 5 secondi...")
     Spoofer.AutoRestart.spoof()
@@ -130,14 +136,23 @@ def spoof_all():
     Spoofer.OSInstallDate.spoof()
     Spoofer.InstallationID.spoof()
     Spoofer.MacAddressSpoofer.spoof()
+    print('mac spoofed')
     Spoofer.spoof_display_edid()
+    print('edid spoofed')
     Spoofer.VolumeSerialNumberSpoofer.spoof_volume_serial_numbers()
+    print('volume disk spoofed')
     Spoofer.DiskSpoofer.list_disks_and_spoof_unique_ids()
+    print('guid disk spoofed')
     Spoofer.RenameDiskSpoofer.spoof()
-    Spoofer.NvidiaSettings.modify_registry_ClientUUID()
-    Spoofer.NvidiaSettings.modify_registry_ChipsetMatchID()
+    print('rename disk spoofed')
+    #Spoofer.NvidiaSettings.modify_registry_ClientUUID()
+    #Spoofer.NvidiaSettings.modify_registry_ChipsetMatchID()
     Spoofer.DMISpoofer.spoof_dmi()
+    print('dmi spoofed')
+    Spoofer.PnpRemover.remove_non_connected_devices()
+    print('removed old device')
     Spoofer.ComputerUserRenamer.spoof()
+    print('rename pc and user  spoofed')
     Spoofer.AutoRestart.spoof()
 
 
@@ -154,10 +169,11 @@ button_list = [
     ("Spoof Disk Vol.Serial Number", spoof_disk_serial),
     ("Spoof Disk GUID", spoof_disk_guid),
     ("Rename Disk Label", spoof_rename_disk),
-    ("Spoof NVIDIA ClientUUID", spoof_nvidia_client_uuid),
-    ("Spoof NVIDIA Chipset Match ID", spoof_nvidia_chipset_id),
+    #("Spoof NVIDIA ClientUUID", spoof_nvidia_client_uuid),
+    #("Spoof NVIDIA Chipset Match ID", spoof_nvidia_chipset_id),
     ("Spoof DMI Information", spoof_dmi),
     ("Rename Computer/User", rename_computer_user),
+    ("Remove old device", remove_non_connected_devices),
     ("Auto Restart", auto_restart)
 ]
 
@@ -169,4 +185,5 @@ for i, (text, command) in enumerate(button_list):
 
 # Avvio dell'interfaccia grafica
 root.mainloop()
+
 
